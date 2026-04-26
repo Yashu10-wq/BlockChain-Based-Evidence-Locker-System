@@ -36,7 +36,7 @@ router.post(
 // ── Accept transfer (QR scan) ──────────────────────────────────
 router.post(
     '/accept',
-    authorize('Custodian'),
+    authorize('Custodian', 'Officer'),
     [
         body('evidence_id').notEmpty().withMessage('Evidence ID is required.'),
         body('qr_data').notEmpty().withMessage('QR data is required.'),
@@ -46,6 +46,6 @@ router.post(
 );
 
 // ── Get full custody history ───────────────────────────────────
-router.get('/history/:evidence_id', getCustodyHistory);
+router.get('/history/:evidence_id', authorize('Admin'), getCustodyHistory);
 
 module.exports = router;

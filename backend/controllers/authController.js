@@ -45,7 +45,7 @@ const register = async (req, res) => {
             user: { id: user.id, name: user.name, email: user.email, role: user.role },
         });
     } catch (err) {
-        console.error('Register error:', err.message);
+        console.error('Register error:', err.stack || err.message);
         return res.status(500).json({ error: 'Internal server error.' });
     }
 };
@@ -56,7 +56,21 @@ const register = async (req, res) => {
  */
 const login = async (req, res) => {
     try {
+        // Seed Check: Check if database has any users
+        const userCount = await UserModel.countUsers();
+        if (userCount === -1) {
+            console.warn("⚠️ Could not query users table. Database might not be initialized.");
+            return res.status(500).json({ error: 'Database not initialized. Please run the seed script: node config/seed.js' });
+        } else if (userCount === 0) {
+            console.warn("⚠️ No users found in the database. Please run the seed script: node config/seed.js");
+            return res.status(500).json({ error: 'System not initialized. Please run the seed script.' });
+        }
+
         const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required.' });
+        }
 
         // 1. Look up user
         const user = await UserModel.findByEmail(email);
@@ -78,9 +92,23 @@ const login = async (req, res) => {
             user: { id: user.id, name: user.name, email: user.email, role: user.role },
         });
     } catch (err) {
-        console.error('Login error:', err.message);
+        console.error('Login error:', err.stack || err.message);
         return res.status(500).json({ error: 'Internal server error.' });
     }
 };
 
-module.exports = { register, login };
+/**
+ * GET /api/auth/users
+ * Returns a list of all users.
+ */
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await UserModel.findAllUsers();
+        return res.status(200).json({ users });
+    } catch (err) {
+        console.error('Get all users error:', err.stack || err.message);
+        return res.status(500).json({ error: 'Internal server error.' });
+    }
+};
+
+module.exports = { register, login, getAllUsers };

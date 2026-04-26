@@ -41,6 +41,29 @@ const UserModel = {
         );
         return rows[0] || null;
     },
+
+    /**
+     * Get all users (used for custody transfer search).
+     */
+    findAllUsers: async () => {
+        const { rows } = await pool.query(
+            'SELECT id, name, email, role FROM users ORDER BY name ASC'
+        );
+        return rows;
+    },
+
+    /**
+     * Check if users exist in the database.
+     */
+    countUsers: async () => {
+        try {
+            const { rows } = await pool.query('SELECT COUNT(*) FROM users');
+            return parseInt(rows[0].count, 10);
+        } catch (error) {
+            // Likely table doesn't exist yet
+            return -1;
+        }
+    },
 };
 
 module.exports = UserModel;

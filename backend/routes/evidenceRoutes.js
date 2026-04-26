@@ -16,6 +16,7 @@ const {
     registerEvidence,
     uploadPhoto,
     getEvidence,
+    getAllEvidence,
     lockEvidence,
 } = require('../controllers/evidenceController');
 
@@ -27,8 +28,9 @@ router.use(auth);
 // ── Register evidence ──────────────────────────────────────────
 router.post(
     '/register',
-    authorize('Officer'),
+    authorize('Officer', 'Admin'),
     [
+        body('crime_id').notEmpty().withMessage('Crime ID is required.'),
         body('title').notEmpty().withMessage('Title is required.'),
         body('description').optional(),
         body('location_found').notEmpty().withMessage('Location found is required.'),
@@ -40,12 +42,15 @@ router.post(
 // ── Upload photo ───────────────────────────────────────────────
 router.post(
     '/upload-photo',
-    authorize('Officer'),
+    authorize('Officer', 'Admin'),
     upload.single('photo'),
     [body('evidence_id').notEmpty().withMessage('Evidence ID is required.')],
     validate,
     uploadPhoto
 );
+
+// ── Get ALL evidence (must be BEFORE /:id to avoid route collision) ──
+router.get('/all', getAllEvidence);
 
 // ── Get evidence by ID ─────────────────────────────────────────
 router.get('/:id', getEvidence);
@@ -53,7 +58,7 @@ router.get('/:id', getEvidence);
 // ── Lock evidence ──────────────────────────────────────────────
 router.post(
     '/lock',
-    authorize('Officer'),
+    authorize('Officer', 'Admin'),
     [body('evidence_id').notEmpty().withMessage('Evidence ID is required.')],
     validate,
     lockEvidence

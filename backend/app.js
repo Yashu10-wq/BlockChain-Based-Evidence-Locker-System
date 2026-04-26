@@ -16,7 +16,12 @@ const app = express();
 
 // ── Global Middleware ──────────────────────────────────────────
 app.use(helmet());                        // Security headers
-app.use(cors());                          // Cross-origin resource sharing
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());                  // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true }));
 
@@ -25,12 +30,14 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── API Routes ─────────────────────────────────────────────────
 const authRoutes = require('./routes/authRoutes');
+const crimeRoutes = require('./routes/crimeRoutes');
 const evidenceRoutes = require('./routes/evidenceRoutes');
 const custodyRoutes = require('./routes/custodyRoutes');
 const forensicRoutes = require('./routes/forensicRoutes');
 const auditRoutes = require('./routes/auditRoutes');
 
 app.use('/api/auth', authRoutes);
+app.use('/api/crimes', crimeRoutes);
 app.use('/api/evidence', evidenceRoutes);
 app.use('/api/custody', custodyRoutes);
 app.use('/api/forensic', forensicRoutes);

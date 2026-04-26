@@ -9,12 +9,12 @@ const EvidenceModel = {
     /**
      * Register a new evidence record.
      */
-    create: async (title, description, locationFound, officerId, qrCode) => {
+    create: async (crimeId, title, description, locationFound, officerId, qrCode) => {
         const { rows } = await pool.query(
-            `INSERT INTO evidence (title, description, location_found, officer_id, qr_code)
-       VALUES ($1, $2, $3, $4, $5)
+            `INSERT INTO evidence (crime_id, title, description, location_found, officer_id, qr_code)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-            [title, description, locationFound, officerId, qrCode]
+            [crimeId, title, description, locationFound, officerId, qrCode]
         );
         return rows[0];
     },
@@ -36,6 +36,34 @@ const EvidenceModel = {
     findAll: async () => {
         const { rows } = await pool.query(
             'SELECT * FROM evidence ORDER BY created_at DESC'
+        );
+        return rows;
+    },
+
+    /**
+     * Retrieve evidence visible to a specific user (original officer OR current custodian).
+     */
+    findVisibleToUser: async (userId) => {
+        const { rows } = await pool.query(
+            `SELECT e.*
+             FROM evidence e
+             WHERE e.officer_id = $1
+             OR e.id IN (
+                 SELECT cl.evidence_id
+                 FROM custody_logs cl
+                 WHERE (
+                     (cl.to_user = $1 AND cl.status = 'ACCEPTED')
+                     OR
+                     (cl.from_user = $1 AND cl.status = 'PENDING')
+                 )
+                 AND cl.timestamp = (
+                     SELECT MAX(cl2.timestamp)
+                     FROM custody_logs cl2
+                     WHERE cl2.evidence_id = cl.evidence_id
+                 )
+             )
+             ORDER BY e.created_at DESC`,
+            [userId]
         );
         return rows;
     },
