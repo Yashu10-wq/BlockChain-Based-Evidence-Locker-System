@@ -33,6 +33,27 @@ export default function AuditPage() {
     }
   };
 
+  const handleRestore = async (brokenAt: number) => {
+    setError("");
+    setLoading(true);
+    try {
+      const { data } = await api.post("/audit/restore", {
+        evidence_id: evidenceId,
+        broken_at: brokenAt,
+      });
+      setVerifyResult({
+        valid: true,
+        restored: true,
+        new_evidence_id: data.new_evidence_id,
+        blocks: [],
+      });
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Restore failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRunAudit = async () => {
     setError(""); setAuditResult(null);
     setLoading(true);
@@ -93,10 +114,12 @@ export default function AuditPage() {
                       ✅
                     </div>
                     <span className="badge badge-success text-sm px-4 py-1.5">
-                      Verified Immutable
+                      {verifyResult.restored ? "Restored Successfully" : "Verified Immutable"}
                     </span>
                     <p className="text-xs text-slate-500">
-                      {verifyResult.blocks?.length || 0} blocks verified — chain is intact.
+                      {verifyResult.restored 
+                        ? `New valid evidence created with ID #${verifyResult.new_evidence_id}`
+                        : `${verifyResult.blocks?.length || 0} blocks verified — chain is intact.`}
                     </p>
                   </div>
                 ) : (
@@ -110,6 +133,9 @@ export default function AuditPage() {
                     <p className="text-xs text-red-600">
                       Chain broken at block #{verifyResult.brokenAt}.
                     </p>
+                    <button onClick={() => handleRestore(verifyResult.brokenAt)} disabled={loading} className="btn-primary mt-2 text-xs py-1 px-3 bg-blue-600 hover:bg-blue-700 text-white border-none rounded">
+                      {loading ? "..." : "Restore Valid Copy"}
+                    </button>
                   </div>
                 )}
               </div>

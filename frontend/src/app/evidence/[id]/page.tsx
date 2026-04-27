@@ -7,7 +7,8 @@ import api from "@/lib/api";
 
 /**
  * ── Evidence Detail Page ──────────────────────────────────────
- * Shows evidence info, photos, QR code, and blockchain custody timeline.
+ * Shows evidence info, photos, QR code, blockchain custody timeline,
+ * and forensic report upload/viewing.
  */
 
 interface Evidence {
@@ -37,29 +38,87 @@ interface CustodyLog {
   previous_hash: string;
 }
 
+interface ForensicReport {
+  id: number;
+  evidence_id: number;
+  technician_id: number;
+  report_file: string;
+  uploaded_at: string;
+}
+
 export default function EvidenceDetailPage() {
   const params   = useParams();
   const id       = params?.id;
   const [evidence, setEvidence] = useState<Evidence | null>(null);
   const [photos, setPhotos]     = useState<Photo[]>([]);
   const [chain, setChain]       = useState<CustodyLog[]>([]);
+  const [reports, setReports]   = useState<ForensicReport[]>([]);
   const [loading, setLoading]   = useState(true);
+  const [user, setUser]         = useState<any>(null);
+
+  // Forensic upload state
+  const [reportFile, setReportFile]     = useState<File | null>(null);
+  const [uploading, setUploading]       = useState(false);
+  const [uploadMsg, setUploadMsg]       = useState("");
+  const [uploadErr, setUploadErr]       = useState("");
 
   useEffect(() => {
     if (!id) return;
 
-    Promise.all([
-      api.get(`/evidence/${id}`),
-      api.get(`/custody/history/${id}`),
-    ])
-      .then(([evRes, custRes]) => {
+    const storedUser = localStorage.getItem("user");
+    const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+    setUser(parsedUser);
+
+    api.get(`/evidence/${id}`)
+      .then((evRes) => {
         setEvidence(evRes.data.evidence);
         setPhotos(evRes.data.photos || []);
-        setChain(custRes.data.custody_chain || []);
+
+        // Only fetch custody history if Admin
+        if (parsedUser?.role === "Admin") {
+          api.get(`/custody/history/${id}`)
+            .then((custRes) => {
+              setChain(custRes.data.custody_chain || []);
+            })
+            .catch(() => {});
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    // Fetch forensic reports (accessible to all authenticated users now)
+    api.get(`/forensic/reports/${id}`)
+      .then((res) => setReports(res.data.reports || []))
+      .catch(() => {});
   }, [id]);
+
+  const handleReportUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportFile || !id) return;
+    setUploading(true);
+    setUploadMsg("");
+    setUploadErr("");
+
+    const formData = new FormData();
+    formData.append("evidence_id", String(id));
+    formData.append("report", reportFile);
+
+    try {
+      await api.post("/forensic/upload-report", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setUploadMsg("Forensic report uploaded successfully.");
+      setReportFile(null);
+
+      // Refresh reports list
+      const res = await api.get(`/forensic/reports/${id}`);
+      setReports(res.data.reports || []);
+    } catch (err: any) {
+      setUploadErr(err.response?.data?.error || "Failed to upload report.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -143,44 +202,106 @@ export default function EvidenceDetailPage() {
               </div>
             )}
 
-            {/* Custody Chain — Formal Ledger */}
+            {/* ── Forensic Reports Section ────────────────────── */}
             <div className="card">
               <h3 className="field-label text-xs mb-4">
-                Blockchain Custody Chain ({chain.length} blocks)
+                🔬 Forensic Reports ({reports.length})
               </h3>
-              {chain.length === 0 ? (
-                <p className="text-slate-400 text-sm">No custody transfers yet.</p>
+
+              {/* Upload Form — Only for Forensic Technician */}
+              {user?.role === "Forensic Technician" && (
+                <form onSubmit={handleReportUpload} className="mb-5 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                  <p className="text-xs font-semibold text-slate-700 mb-3">Upload New Report</p>
+                  {uploadMsg && <div className="alert-success mb-3 text-xs">{uploadMsg}</div>}
+                  {uploadErr && <div className="alert-error mb-3 text-xs">{uploadErr}</div>}
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      onChange={(e) => setReportFile(e.target.files?.[0] || null)}
+                      className="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      disabled={uploading || !reportFile}
+                      className="btn-primary text-xs whitespace-nowrap"
+                    >
+                      {uploading ? "Uploading..." : "Upload Report"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Reports List */}
+              {reports.length === 0 ? (
+                <p className="text-slate-400 text-sm">No forensic reports submitted yet.</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Block</th>
-                        <th>Transfer</th>
-                        <th>Timestamp</th>
-                        <th>Hash</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {chain.map((log) => (
-                        <tr key={log.id}>
-                          <td className="font-mono text-xs text-blue-600 font-semibold">#{log.block_index}</td>
-                          <td className="text-slate-700">
-                            User #{log.from_user} → #{log.to_user}
-                          </td>
-                          <td className="text-slate-400 text-xs">
-                            {new Date(log.timestamp).toLocaleString()}
-                          </td>
-                          <td className="font-mono text-[10px] text-slate-400 max-w-[200px] truncate">
-                            {log.current_hash}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="space-y-2">
+                  {reports.map((r) => (
+                    <div key={r.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                      <div>
+                        <p className="text-sm font-medium text-slate-800">
+                          Report #{r.id}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          Technician #{r.technician_id} · {new Date(r.uploaded_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <a
+                        href={r.report_file}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-xs font-medium bg-blue-50 px-3 py-1 rounded"
+                      >
+                        View Report →
+                      </a>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
+
+            {/* Custody Chain — Formal Ledger (Admin Only) */}
+            {user?.role === "Admin" && (
+              <div className="card">
+                <h3 className="field-label text-xs mb-4">
+                  Blockchain Custody Chain ({chain.length} blocks)
+                </h3>
+                {chain.length === 0 ? (
+                  <p className="text-slate-400 text-sm">No custody transfers yet.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Block</th>
+                          <th>Transfer</th>
+                          <th>Timestamp</th>
+                          <th>Hash</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {chain.map((log) => (
+                          <tr key={log.id}>
+                            <td className="font-mono text-xs text-blue-600 font-semibold">#{log.block_index}</td>
+                            <td className="text-slate-700">
+                              User #{log.from_user} → #{log.to_user}
+                            </td>
+                            <td className="text-slate-400 text-xs">
+                              {new Date(log.timestamp).toLocaleString()}
+                            </td>
+                            <td className="font-mono text-[10px] text-slate-400 max-w-[200px] truncate">
+                              {log.current_hash}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* ── Right: QR Code ──────────────────────────────── */}

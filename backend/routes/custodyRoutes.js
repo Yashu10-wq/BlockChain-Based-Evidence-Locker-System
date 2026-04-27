@@ -24,7 +24,7 @@ router.use(auth);
 // ── Initiate transfer ──────────────────────────────────────────
 router.post(
     '/initiate',
-    authorize('Officer'),
+    authorize('Officer', 'Custodian'),
     [
         body('evidence_id').notEmpty().withMessage('Evidence ID is required.'),
         body('to_user').notEmpty().withMessage('Recipient user ID is required.'),
@@ -36,7 +36,7 @@ router.post(
 // ── Accept transfer (QR scan) ──────────────────────────────────
 router.post(
     '/accept',
-    authorize('Custodian', 'Officer'),
+    authorize('Custodian', 'Officer', 'Forensic Technician'),
     [
         body('evidence_id').notEmpty().withMessage('Evidence ID is required.'),
         body('qr_data').notEmpty().withMessage('QR data is required.'),

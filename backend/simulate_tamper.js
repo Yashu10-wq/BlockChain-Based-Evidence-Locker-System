@@ -49,7 +49,14 @@ async function simulateTamper() {
     await pool.query('ALTER TABLE custody_logs ENABLE TRIGGER ALL;');
 
     // 5. Success Message
-    console.log('\n🚨 DATABASE MANIPULATED: Evidence history altered successfully 🚨');
+    console.log('\n' + '='.repeat(60));
+    console.log('🚨 DATABASE MANIPULATED: Evidence history altered successfully 🚨');
+    console.log('='.repeat(60));
+    console.log(`  Targeted Evidence ID : ${evidenceId}`);
+    console.log(`  Tampered Block       : #${logToTamper.block_index}`);
+    console.log(`  Original to_user     : ${logToTamper.to_user}`);
+    console.log(`  Injected to_user     : ${newUserId}`);
+    console.log('='.repeat(60));
     console.log('Go to your frontend, open the Integrity Audit page, and run the audit to see the system catch this hack!');
     
     process.exit(0);

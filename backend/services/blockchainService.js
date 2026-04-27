@@ -67,11 +67,14 @@ const BlockchainService = {
     const previousHash = latest ? latest.current_hash : '0';
 
     // 3. Build block data payload
+    // CRITICAL FIX: Ensure all IDs are strict Numbers. 
+    // JSON.stringify() hashes Strings and Numbers differently!
+    // req.body often passes them as strings, but Postgres returns integers.
     const timestamp = new Date().toISOString();
     const data = {
-      evidence_id: evidenceId,
-      from_user:   fromUser,
-      to_user:     toUser,
+      evidence_id: parseInt(evidenceId, 10),
+      from_user:   parseInt(fromUser, 10),
+      to_user:     parseInt(toUser, 10),
       ...extraData,
     };
 

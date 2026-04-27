@@ -27,9 +27,11 @@ const uploadReport = async (req, res) => {
             return res.status(404).json({ error: 'Evidence not found.' });
         }
 
-        // Save forensic report record
+        // Save forensic report record with a proper HTTP URL
+        const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        
         const report = await ForensicReportModel.create(
-            evidence_id, technicianId, req.file.path
+            evidence_id, technicianId, fileUrl
         );
 
         return res.status(201).json({

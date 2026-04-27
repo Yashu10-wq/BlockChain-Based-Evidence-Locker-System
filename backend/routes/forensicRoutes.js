@@ -33,7 +33,7 @@ router.post(
 // ── Get forensic reports for evidence ──────────────────────────
 router.get(
     '/reports/:evidence_id',
-    authorize('Forensic Technician', 'Admin'),
+    authorize('Forensic Technician', 'Admin', 'Officer', 'Custodian'),
     getReports
 );
 

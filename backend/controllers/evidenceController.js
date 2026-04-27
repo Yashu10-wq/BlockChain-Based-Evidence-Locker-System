@@ -191,7 +191,16 @@ const getAllEvidence = async (req, res) => {
     } else {
       evidence = await EvidenceModel.findVisibleToUser(req.user.id);
     }
-    return res.status(200).json({ evidence });
+
+    // Attach blockchain integrity flag to each evidence item
+    const enriched = await Promise.all(
+      evidence.map(async (e) => {
+        const chainResult = await BlockchainService.verifyChain(e.id);
+        return { ...e, isCorrupted: !chainResult.valid };
+      })
+    );
+
+    return res.status(200).json({ evidence: enriched });
   } catch (err) {
     console.error('Get all evidence error:', err.message);
     return res.status(500).json({ error: 'Internal server error.' });

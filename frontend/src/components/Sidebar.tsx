@@ -30,11 +30,11 @@ const NAV_ITEMS: Record<string, { label: string; href: string; icon: string }[]>
   Admin: [
     { label: "Dashboard",          href: "/dashboard",          icon: "📊" },
     { label: "Register Crime",     href: "/crimes/register",    icon: "📋" },
-    { label: "Custody Transfer",    href: "/custody",            icon: "🔗" },
     { label: "Integrity Audit",     href: "/audit",              icon: "🛡️" },
   ],
   "Forensic Technician": [
     { label: "Dashboard",          href: "/dashboard",          icon: "📊" },
+    { label: "Custody Transfer",    href: "/custody",            icon: "🔗" },
     { label: "Forensic Reports",    href: "/forensic",           icon: "🔬" },
   ],
 };

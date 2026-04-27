@@ -30,6 +30,15 @@ const initiateTransfer = async (req, res) => {
       return res.status(404).json({ error: 'Evidence not found.' });
     }
 
+    // Verify blockchain integrity before allowing transfer
+    const chainResult = await BlockchainService.verifyChain(evidence_id);
+    if (!chainResult.valid) {
+      return res.status(403).json({ 
+        error: 'BLOCKED: Evidence blockchain is corrupted. Custody transfers are locked for this item.',
+        brokenAt: chainResult.brokenAt,
+      });
+    }
+
     // Mine a new block via the Blockchain Service with PENDING status
     const log = await BlockchainService.addBlock(evidence_id, fromUser, to_user, {}, 'PENDING');
 
@@ -72,6 +81,15 @@ const acceptTransfer = async (req, res) => {
     const evidence = await EvidenceModel.findById(evidence_id);
     if (!evidence) {
       return res.status(404).json({ error: 'Evidence not found.' });
+    }
+
+    // 2b. Verify blockchain integrity before allowing acceptance
+    const chainResult = await BlockchainService.verifyChain(evidence_id);
+    if (!chainResult.valid) {
+      return res.status(403).json({ 
+        error: 'BLOCKED: Evidence blockchain is corrupted. Custody transfers are locked for this item.',
+        brokenAt: chainResult.brokenAt,
+      });
     }
 
     // 3. Find the latest block to know who is handing over

@@ -46,9 +46,9 @@ export default function DashboardPage() {
   const totalCrimes = crimes.length;
 
   const stats = [
-    { label: "Total Crimes",    value: totalCrimes,  color: "#002366",  bg: "#EFF6FF" },
-    { label: "Active Officers", value: "—",          color: "#16A34A",  bg: "#F0FDF4" },
-    { label: "System Status",   value: "Online",     color: "#D97706",  bg: "#FFFBEB" },
+    { label: "Total Crimes",    value: totalCrimes,  icon: "📁", color: "#002366",  bg: "#EFF6FF" },
+    { label: "Active Officers", value: "—",          icon: "👮", color: "#16A34A",  bg: "#F0FDF4" },
+    { label: "System Status",   value: "Online",     icon: "⚡", color: "#D97706",  bg: "#FFFBEB" },
   ];
 
   return (
@@ -70,9 +70,9 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
           {stats.map((stat) => (
             <div key={stat.label} className="card flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold"
-                   style={{ background: stat.color }}>
-                {stat.value}
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg"
+                   style={{ background: stat.bg }}>
+                {stat.icon}
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-900">{stat.value}</p>

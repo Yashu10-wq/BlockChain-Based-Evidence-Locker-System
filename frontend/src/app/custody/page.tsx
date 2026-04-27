@@ -112,61 +112,64 @@ export default function CustodyPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* ── Initiate Transfer Card ────────────────────────── */}
-          <div className="card">
-            <h3 className="text-base font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-600 inline-block"></span>
-              Initiate Transfer
-            </h3>
-            <form onSubmit={handleInitiate} className="space-y-4">
-              <div>
-                <label className="field-label">Evidence ID</label>
-                <input type="text" value={evidenceId} onChange={(e) => setEvidenceId(e.target.value)}
-                  required placeholder="e.g. 1"
-                  className="input-field" id="custody-evidence-id" />
-              </div>
-              <div className="relative">
-                <label className="field-label">Transfer To (Search/Select User)</label>
-                <input 
-                  type="text" 
-                  placeholder="Search by name or role..."
-                  value={userSearchTerm}
-                  onChange={(e) => { 
-                    setUserSearchTerm(e.target.value); 
-                    setIsUserDropdownOpen(true); 
-                    setToUser(""); // reset if they type
-                  }}
-                  onFocus={() => setIsUserDropdownOpen(true)}
-                  className="input-field"
-                  required={!toUser}
-                />
-                {isUserDropdownOpen && (
-                  <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-y-auto text-sm">
-                    {allUsers
-                      .filter(u => u.name.toLowerCase().includes(userSearchTerm.toLowerCase()) || u.role.toLowerCase().includes(userSearchTerm.toLowerCase()))
-                      .map((u) => (
-                      <div 
-                        key={u.id} 
-                        className="px-4 py-2 hover:bg-slate-100 cursor-pointer text-slate-800 border-b border-slate-50 last:border-0"
-                        onClick={() => {
-                          setToUser(String(u.id));
-                          setUserSearchTerm(`${u.name} — ${u.role} (ID: ${u.id})`);
-                          setIsUserDropdownOpen(false);
-                        }}
-                      >
-                        <span className="font-semibold">{u.name}</span> <span className="text-slate-500">— {u.role} (ID: {u.id})</span>
-                      </div>
-                    ))}
-                    {allUsers.filter(u => u.name.toLowerCase().includes(userSearchTerm.toLowerCase()) || u.role.toLowerCase().includes(userSearchTerm.toLowerCase())).length === 0 && (
-                      <div className="px-4 py-2 text-slate-500">No users found.</div>
-                    )}
-                  </div>
-                )}
-              </div>
-              <button type="submit" disabled={loading} className="btn-primary w-full justify-center" id="initiate-transfer-btn">
-                {loading ? <span className="spinner" /> : "Initiate Transfer"}
-              </button>
-            </form>
-          </div>
+          {user?.role !== "Forensic Technician" && (
+            <div className="card">
+              <h3 className="text-base font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-600 inline-block"></span>
+                Initiate Transfer
+              </h3>
+              <form onSubmit={handleInitiate} className="space-y-4">
+                <div>
+                  <label className="field-label">Evidence ID</label>
+                  <input type="text" value={evidenceId} onChange={(e) => setEvidenceId(e.target.value)}
+                    required placeholder="e.g. 1"
+                    className="input-field" id="custody-evidence-id" />
+                </div>
+                <div className="relative">
+                  <label className="field-label">Transfer To (Search/Select User)</label>
+                  <input 
+                    type="text" 
+                    placeholder="Search by name or role..."
+                    value={userSearchTerm}
+                    onChange={(e) => { 
+                      setUserSearchTerm(e.target.value); 
+                      setIsUserDropdownOpen(true); 
+                      setToUser(""); // reset if they type
+                    }}
+                    onFocus={() => setIsUserDropdownOpen(true)}
+                    className="input-field"
+                    required={!toUser}
+                  />
+                  {isUserDropdownOpen && (
+                    <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-y-auto text-sm">
+                      {allUsers
+                        .filter(u => u.id !== user?.id && u.role !== "Admin")
+                        .filter(u => u.name.toLowerCase().includes(userSearchTerm.toLowerCase()) || u.role.toLowerCase().includes(userSearchTerm.toLowerCase()))
+                        .map((u) => (
+                        <div 
+                          key={u.id} 
+                          className="px-4 py-2 hover:bg-slate-100 cursor-pointer text-slate-800 border-b border-slate-50 last:border-0"
+                          onClick={() => {
+                            setToUser(String(u.id));
+                            setUserSearchTerm(`${u.name} — ${u.role} (ID: ${u.id})`);
+                            setIsUserDropdownOpen(false);
+                          }}
+                        >
+                          <span className="font-semibold">{u.name}</span> <span className="text-slate-500">— {u.role} (ID: {u.id})</span>
+                        </div>
+                      ))}
+                      {allUsers.filter(u => u.id !== user?.id && u.role !== "Admin").filter(u => u.name.toLowerCase().includes(userSearchTerm.toLowerCase()) || u.role.toLowerCase().includes(userSearchTerm.toLowerCase())).length === 0 && (
+                        <div className="px-4 py-2 text-slate-500">No users found.</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <button type="submit" disabled={loading} className="btn-primary w-full justify-center" id="initiate-transfer-btn">
+                  {loading ? <span className="spinner" /> : "Initiate Transfer"}
+                </button>
+              </form>
+            </div>
+          )}
 
           {/* ── Accept Transfer (QR Scan) Card ────────────────── */}
           <div className="card">

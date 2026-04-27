@@ -21,6 +21,7 @@ interface Evidence {
   location_found: string;
   locked: boolean;
   created_at: string;
+  isCorrupted?: boolean;
 }
 
 interface User {
@@ -133,20 +134,32 @@ export default function CrimeFolderPage() {
                 </thead>
                 <tbody>
                   {evidence.map((e) => (
-                    <tr key={e.id}>
+                    <tr key={e.id} className={e.isCorrupted ? "bg-red-50/60" : ""}>
                       <td className="font-mono text-xs text-slate-400">#{e.id}</td>
                       <td className="font-medium text-slate-900">{e.title}</td>
                       <td className="text-slate-500">{e.location_found}</td>
                       <td>
-                        <span className={`badge ${e.locked ? "badge-success" : "badge-warning"}`}>
-                          {e.locked ? "Locked" : "Open"}
-                        </span>
+                        {e.isCorrupted ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                            ⚠ CORRUPTED
+                          </span>
+                        ) : (
+                          <span className={`badge ${e.locked ? "badge-success" : "badge-warning"}`}>
+                            {e.locked ? "Locked" : "Open"}
+                          </span>
+                        )}
                       </td>
                       <td>
-                        <Link href={`/evidence/${e.id}`}
-                          className="text-blue-600 hover:text-blue-800 text-xs font-medium bg-blue-50 px-3 py-1 rounded">
-                          View Details →
-                        </Link>
+                        {e.isCorrupted ? (
+                          <span className="text-red-400 text-xs font-medium px-3 py-1 rounded bg-red-50 border border-red-100 cursor-not-allowed">
+                            🔒 Locked — Tampered
+                          </span>
+                        ) : (
+                          <Link href={`/evidence/${e.id}`}
+                            className="text-blue-600 hover:text-blue-800 text-xs font-medium bg-blue-50 px-3 py-1 rounded">
+                            View Details →
+                          </Link>
+                        )}
                       </td>
                     </tr>
                   ))}
