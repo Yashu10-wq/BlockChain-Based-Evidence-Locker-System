@@ -10,7 +10,7 @@
 const CustodyLogModel  = require('../models/custodyLogModel');
 const EvidenceModel    = require('../models/evidenceModel');
 const AuditReportModel = require('../models/auditReportModel');
-const { BlockchainService } = require('../services/blockchainService');
+const { Block, BlockchainService } = require('../services/blockchainService');
 const pool = require('../config/db');
 const { generateQRCode } = require('../utils/qrUtil');
 
@@ -139,7 +139,9 @@ const restoreEvidence = async (req, res) => {
     const oldEv = evidenceRows[0];
 
     // 2. Insert new restored evidence
-    const newTitle = `[Restored from #${oldEv.id}] ${oldEv.title}`;
+    const prefix = `[Restored from #${oldEv.id}] `;
+    let newTitle = prefix + oldEv.title;
+    if (newTitle.length > 200) newTitle = newTitle.substring(0, 200);
     const { rows: newEvRows } = await client.query(
       `INSERT INTO evidence (crime_id, title, description, location_found, officer_id, locked)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
@@ -161,18 +163,45 @@ const restoreEvidence = async (req, res) => {
       );
     }
 
-    // 5. Copy custody logs up to broken_at (exclusive)
+    // 4.5 Copy forensic reports
+    const { rows: reports } = await client.query('SELECT * FROM forensic_reports WHERE evidence_id = $1', [oldEv.id]);
+    for (const report of reports) {
+      await client.query(
+        `INSERT INTO forensic_reports (evidence_id, technician_id, report_file, uploaded_at)
+         VALUES ($1, $2, $3, $4)`,
+        [newEvId, report.technician_id, report.report_file, report.uploaded_at]
+      );
+    }
+
+    // 5. Re-mine custody chain for the new evidence_id
+    //    We cannot just copy old hashes — the hash payload includes evidence_id.
+    //    Old hashes were computed with the OLD evidence_id, so they'd be invalid
+    //    for the new one. We must re-create fresh blocks.
     const { rows: logs } = await client.query(
       'SELECT * FROM custody_logs WHERE evidence_id = $1 AND block_index < $2 ORDER BY block_index ASC',
       [oldEv.id, broken_at]
     );
     
-    for (const log of logs) {
+    let previousHash = '0';
+    for (let i = 0; i < logs.length; i++) {
+      const log = logs[i];
+      const timestamp = log.timestamp instanceof Date ? log.timestamp.toISOString() : log.timestamp;
+      const data = {
+        evidence_id: parseInt(newEvId, 10),
+        from_user:   parseInt(log.from_user, 10),
+        to_user:     parseInt(log.to_user, 10),
+      };
+      const block = new Block(i, timestamp, data, previousHash);
+
       await client.query(
         `INSERT INTO custody_logs (evidence_id, from_user, to_user, timestamp, previous_hash, current_hash, block_index, status)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [newEvId, log.from_user, log.to_user, log.timestamp, log.previous_hash, log.current_hash, log.block_index, log.status]
+        [newEvId, log.from_user, log.to_user, timestamp,
+         previousHash === '0' ? null : previousHash,
+         block.hash, i, log.status]
       );
+
+      previousHash = block.hash;
     }
 
     await client.query('COMMIT');

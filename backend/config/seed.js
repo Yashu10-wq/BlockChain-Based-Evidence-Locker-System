@@ -43,6 +43,13 @@ const SEED_USERS = [
         password: 'forensic123',
         role: 'Forensic Technician',
     },
+    {
+        name: 'Dr. Yash',
+        email: 'yashwadhwani7867@gmail.com',
+        password: 'forensic123',
+        role: 'Forensic Technician',
+    },
+
 ];
 
 async function seed() {

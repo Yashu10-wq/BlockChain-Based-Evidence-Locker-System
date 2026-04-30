@@ -7,6 +7,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const UserModel = require('../models/userModel');
+const nodemailer = require('nodemailer');
+const pool = require('../config/db');
 
 // ── Helper: sign a JWT for the given user ──────────────────────
 const signToken = (user) => {
@@ -111,4 +113,92 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getAllUsers };
+/**
+ * POST /api/auth/forgot-password
+ * Body: { email }
+ */
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Email is required.' });
+
+        const user = await UserModel.findByEmail(email);
+        if (!user) {
+            // Do not reveal if email exists, just say successful
+            return res.status(200).json({ message: 'If the email exists, an OTP was sent.' });
+        }
+
+        // Generate 6 digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+        await pool.query(
+            'INSERT INTO otps (user_email, otp_code, expires_at) VALUES ($1, $2, $3)',
+            [email, otp, expiresAt]
+        );
+
+        // Send email
+        console.log('Sending OTP email to:', email, 'from:', process.env.EMAIL_USER);
+        const transporter = nodemailer.createTransport({
+            host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+            port: parseInt(process.env.EMAIL_PORT) || 587,
+            secure: false, // TLS on port 587
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+
+        const mailOptions = {
+            from: `"Evidence Locker System" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'Password Reset OTP',
+            text: `Your password reset OTP is: ${otp}\n\nIt expires in 15 minutes.`,
+            html: `<h3>Password Reset</h3><p>Your password reset OTP is: <strong>${otp}</strong></p><p>It expires in 15 minutes.</p>`
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        return res.status(200).json({ message: 'If the email exists, an OTP was sent.' });
+    } catch (err) {
+        console.error('Forgot password error:', err.stack || err.message);
+        return res.status(500).json({ error: 'Internal server error.' });
+    }
+};
+
+/**
+ * POST /api/auth/reset-password
+ * Body: { email, otp, newPassword }
+ */
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ error: 'Missing required fields.' });
+        }
+
+        // Verify OTP
+        const { rows } = await pool.query(
+            'SELECT * FROM otps WHERE user_email = $1 AND otp_code = $2 AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1',
+            [email, otp]
+        );
+
+        if (rows.length === 0) {
+            return res.status(400).json({ error: 'Invalid or expired OTP.' });
+        }
+
+        // Hash new password
+        const passwordHash = await bcrypt.hash(newPassword, 12);
+        await pool.query('UPDATE users SET password_hash = $1 WHERE email = $2', [passwordHash, email]);
+
+        // Clean up OTPs for this user
+        await pool.query('DELETE FROM otps WHERE user_email = $1', [email]);
+
+        return res.status(200).json({ message: 'Password reset successful.' });
+    } catch (err) {
+        console.error('Reset password error:', err.stack || err.message);
+        return res.status(500).json({ error: 'Internal server error.' });
+    }
+};
+
+module.exports = { register, login, getAllUsers, forgotPassword, resetPassword };

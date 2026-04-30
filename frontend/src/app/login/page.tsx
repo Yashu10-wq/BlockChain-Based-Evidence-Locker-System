@@ -68,6 +68,13 @@ export default function LoginPage() {
             </div>
           )}
 
+          <div className="flex items-center justify-end">
+            <button type="button" onClick={() => router.push("/forgot-password")}
+              className="text-xs text-blue-600 hover:text-blue-800 font-medium">
+              Forgot Password?
+            </button>
+          </div>
+
           <button type="submit" disabled={loading}
             className="btn-primary w-full justify-center" id="login-submit">
             {loading ? (

@@ -83,6 +83,15 @@ CREATE TABLE IF NOT EXISTS audit_reports (
   created_at      TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- ── OTPs (Password Reset) ──────────────────────────────────────
+CREATE TABLE IF NOT EXISTS otps (
+    id SERIAL PRIMARY KEY,
+    user_email VARCHAR(150) NOT NULL REFERENCES users(email) ON DELETE CASCADE,
+    otp_code VARCHAR(10) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ── Indexes ────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_evidence_officer   ON evidence(officer_id);
 CREATE INDEX IF NOT EXISTS idx_custody_evidence   ON custody_logs(evidence_id);
