@@ -1,15 +1,5 @@
-/**
- * ── Crime Controller ──────────────────────────────────────────
- * Handles crime registration and retrieval.
- */
-
 const CrimeModel = require('../models/crimeModel');
 
-/**
- * POST /api/crimes/register
- * Body: { title, description }
- * Role: Officer, Admin
- */
 const registerCrime = async (req, res) => {
     try {
         const { title, description } = req.body;
@@ -25,11 +15,6 @@ const registerCrime = async (req, res) => {
     }
 };
 
-/**
- * GET /api/crimes/all
- * Returns all crimes. Filtered based on user role and custody.
- * Role: Any authenticated user
- */
 const getAllCrimes = async (req, res) => {
     try {
         let crimes;
@@ -45,10 +30,6 @@ const getAllCrimes = async (req, res) => {
     }
 };
 
-/**
- * GET /api/crimes/:id
- * Returns a single crime.
- */
 const getCrime = async (req, res) => {
     try {
         const crime = await CrimeModel.findById(req.params.id);

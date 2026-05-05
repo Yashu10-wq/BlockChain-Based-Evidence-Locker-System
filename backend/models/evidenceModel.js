@@ -1,14 +1,9 @@
-/**
- * ── Evidence Model ────────────────────────────────────────────
- * DB-access layer for the `evidence` table.
- */
-
 const pool = require('../config/db');
 
 const EvidenceModel = {
-    /**
-     * Register a new evidence record.
-     */
+    
+
+
     create: async (crimeId, title, description, locationFound, officerId, qrCode) => {
         const { rows } = await pool.query(
             `INSERT INTO evidence (crime_id, title, description, location_found, officer_id, qr_code)
@@ -19,9 +14,9 @@ const EvidenceModel = {
         return rows[0];
     },
 
-    /**
-     * Find evidence by ID.
-     */
+    
+
+
     findById: async (id) => {
         const { rows } = await pool.query(
             'SELECT * FROM evidence WHERE id = $1',
@@ -30,9 +25,9 @@ const EvidenceModel = {
         return rows[0] || null;
     },
 
-    /**
-     * Retrieve all evidence records.
-     */
+    
+
+
     findAll: async () => {
         const { rows } = await pool.query(
             'SELECT * FROM evidence ORDER BY created_at DESC'
@@ -40,9 +35,9 @@ const EvidenceModel = {
         return rows;
     },
 
-    /**
-     * Retrieve evidence visible to a specific user (original officer OR current custodian).
-     */
+    
+
+
     findVisibleToUser: async (userId) => {
         const { rows } = await pool.query(
             `SELECT e.*
@@ -68,9 +63,9 @@ const EvidenceModel = {
         return rows;
     },
 
-    /**
-     * Lock an evidence record so it can no longer be edited.
-     */
+    
+
+
     lock: async (id) => {
         const { rows } = await pool.query(
             `UPDATE evidence SET locked = TRUE WHERE id = $1 RETURNING *`,
@@ -79,9 +74,9 @@ const EvidenceModel = {
         return rows[0] || null;
     },
 
-    /**
-     * Update the QR code for an evidence record.
-     */
+    
+
+
     updateQRCode: async (id, qrCode) => {
         const { rows } = await pool.query(
             `UPDATE evidence SET qr_code = $1 WHERE id = $2 RETURNING *`,

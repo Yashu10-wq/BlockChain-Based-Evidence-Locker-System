@@ -1,11 +1,3 @@
-/**
- * ── Evidence Routes ───────────────────────────────────────────
- * POST /api/evidence/register       — register new evidence          (Officer)
- * POST /api/evidence/upload-photo   — upload evidence photo          (Officer)
- * GET  /api/evidence/:id            — view evidence + photos         (All authed)
- * POST /api/evidence/lock           — lock evidence record           (Officer)
- */
-
 const express = require('express');
 const { body } = require('express-validator');
 const validate = require('../middleware/validationMiddleware');
@@ -22,10 +14,10 @@ const {
 
 const router = express.Router();
 
-// All evidence routes require authentication
+
 router.use(auth);
 
-// ── Register evidence ──────────────────────────────────────────
+
 router.post(
     '/register',
     authorize('Officer', 'Admin'),
@@ -39,7 +31,7 @@ router.post(
     registerEvidence
 );
 
-// ── Upload photo ───────────────────────────────────────────────
+
 router.post(
     '/upload-photo',
     authorize('Officer', 'Admin'),
@@ -49,13 +41,13 @@ router.post(
     uploadPhoto
 );
 
-// ── Get ALL evidence (must be BEFORE /:id to avoid route collision) ──
+
 router.get('/all', getAllEvidence);
 
-// ── Get evidence by ID ─────────────────────────────────────────
+
 router.get('/:id', getEvidence);
 
-// ── Lock evidence ──────────────────────────────────────────────
+
 router.post(
     '/lock',
     authorize('Officer', 'Admin'),

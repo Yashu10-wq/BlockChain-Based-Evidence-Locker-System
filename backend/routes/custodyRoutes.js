@@ -1,10 +1,3 @@
-/**
- * ── Custody Routes ────────────────────────────────────────────
- * POST /api/custody/initiate              — initiate transfer    (Officer)
- * POST /api/custody/accept                — accept via QR scan   (Custodian)
- * GET  /api/custody/history/:evidence_id  — view custody chain   (All authed)
- */
-
 const express = require('express');
 const { body } = require('express-validator');
 const validate = require('../middleware/validationMiddleware');
@@ -18,13 +11,13 @@ const {
 
 const router = express.Router();
 
-// All custody routes require authentication
+
 router.use(auth);
 
-// ── Initiate transfer ──────────────────────────────────────────
+
 router.post(
     '/initiate',
-    authorize('Officer', 'Custodian'),
+    authorize('Officer', 'Custodian', 'Admin'),
     [
         body('evidence_id').notEmpty().withMessage('Evidence ID is required.'),
         body('to_user').notEmpty().withMessage('Recipient user ID is required.'),
@@ -33,7 +26,7 @@ router.post(
     initiateTransfer
 );
 
-// ── Accept transfer (QR scan) ──────────────────────────────────
+
 router.post(
     '/accept',
     authorize('Custodian', 'Officer', 'Forensic Technician'),
@@ -45,7 +38,7 @@ router.post(
     acceptTransfer
 );
 
-// ── Get full custody history ───────────────────────────────────
+
 router.get('/history/:evidence_id', authorize('Admin'), getCustodyHistory);
 
 module.exports = router;

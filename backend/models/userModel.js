@@ -1,15 +1,9 @@
-/**
- * ── User Model ────────────────────────────────────────────────
- * Thin DB-access layer for the `users` table.
- */
-
 const pool = require('../config/db');
 
 const UserModel = {
-    /**
-     * Create a new user.
-     * @returns {object} the created user row
-     */
+    
+
+
     create: async (name, email, passwordHash, role) => {
         const { rows } = await pool.query(
             `INSERT INTO users (name, email, password_hash, role)
@@ -20,9 +14,9 @@ const UserModel = {
         return rows[0];
     },
 
-    /**
-     * Find a user by email (used during login).
-     */
+    
+
+
     findByEmail: async (email) => {
         const { rows } = await pool.query(
             'SELECT * FROM users WHERE email = $1',
@@ -31,9 +25,9 @@ const UserModel = {
         return rows[0] || null;
     },
 
-    /**
-     * Find a user by primary key.
-     */
+    
+
+
     findById: async (id) => {
         const { rows } = await pool.query(
             'SELECT id, name, email, role, created_at FROM users WHERE id = $1',
@@ -42,9 +36,9 @@ const UserModel = {
         return rows[0] || null;
     },
 
-    /**
-     * Get all users (used for custody transfer search).
-     */
+    
+
+
     findAllUsers: async () => {
         const { rows } = await pool.query(
             'SELECT id, name, email, role FROM users ORDER BY name ASC'
@@ -52,15 +46,15 @@ const UserModel = {
         return rows;
     },
 
-    /**
-     * Check if users exist in the database.
-     */
+    
+
+
     countUsers: async () => {
         try {
             const { rows } = await pool.query('SELECT COUNT(*) FROM users');
             return parseInt(rows[0].count, 10);
         } catch (error) {
-            // Likely table doesn't exist yet
+            
             return -1;
         }
     },

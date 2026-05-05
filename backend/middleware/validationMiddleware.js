@@ -1,9 +1,3 @@
-/**
- * ── Validation Middleware ──────────────────────────────────────
- * Wraps express-validator's validationResult and returns a 400
- * response with structured errors when validation fails.
- */
-
 const { validationResult } = require('express-validator');
 
 const validate = (req, res, next) => {

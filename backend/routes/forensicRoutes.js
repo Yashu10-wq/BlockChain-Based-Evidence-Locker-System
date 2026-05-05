@@ -1,9 +1,3 @@
-/**
- * ── Forensic Routes ───────────────────────────────────────────
- * POST /api/forensic/upload-report         — upload report   (Forensic Technician)
- * GET  /api/forensic/reports/:evidence_id  — list reports    (Forensic Tech, Admin)
- */
-
 const express = require('express');
 const { body } = require('express-validator');
 const validate = require('../middleware/validationMiddleware');
@@ -17,10 +11,10 @@ const {
 
 const router = express.Router();
 
-// All forensic routes require authentication
+
 router.use(auth);
 
-// ── Upload forensic report ─────────────────────────────────────
+
 router.post(
     '/upload-report',
     authorize('Forensic Technician'),
@@ -30,7 +24,7 @@ router.post(
     uploadReport
 );
 
-// ── Get forensic reports for evidence ──────────────────────────
+
 router.get(
     '/reports/:evidence_id',
     authorize('Forensic Technician', 'Admin', 'Officer', 'Custodian'),

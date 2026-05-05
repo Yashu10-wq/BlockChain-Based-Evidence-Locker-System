@@ -1,9 +1,3 @@
-/**
- * ── Auth Routes ───────────────────────────────────────────────
- * POST /api/auth/register  — create a new user
- * POST /api/auth/login     — authenticate and receive JWT
- */
-
 const express = require('express');
 const { body } = require('express-validator');
 const validate = require('../middleware/validationMiddleware');
@@ -11,7 +5,7 @@ const { register, login, getAllUsers, forgotPassword, resetPassword } = require(
 
 const router = express.Router();
 
-// ── Validation rules ───────────────────────────────────────────
+
 const registerRules = [
     body('name').notEmpty().withMessage('Name is required.'),
     body('email').isEmail().withMessage('Valid email is required.'),
@@ -38,7 +32,7 @@ const resetPasswordRules = [
     body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters.'),
 ];
 
-// ── Routes ─────────────────────────────────────────────────────
+
 router.post('/register', registerRules, validate, register);
 router.post('/login', loginRules, validate, login);
 router.post('/forgot-password', forgotPasswordRules, validate, forgotPassword);

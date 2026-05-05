@@ -1,14 +1,8 @@
-/**
- * ── Crime Model ────────────────────────────────────────────────
- * DB-access layer for the `crimes` table.
- */
-
 const pool = require('../config/db');
 
 const CrimeModel = {
-    /**
-     * Create a new crime folder.
-     */
+    
+
     create: async (title, description, officerId) => {
         const { rows } = await pool.query(
             `INSERT INTO crimes (title, description, officer_id)
@@ -18,9 +12,8 @@ const CrimeModel = {
         return rows[0];
     },
 
-    /**
-     * Find a crime by ID.
-     */
+    
+
     findById: async (id) => {
         const { rows } = await pool.query(
             'SELECT * FROM crimes WHERE id = $1',
@@ -29,9 +22,8 @@ const CrimeModel = {
         return rows[0] || null;
     },
 
-    /**
-     * Retrieve all crime records.
-     */
+    
+
     findAll: async () => {
         const { rows } = await pool.query(
             'SELECT * FROM crimes ORDER BY created_at DESC'
@@ -39,10 +31,8 @@ const CrimeModel = {
         return rows;
     },
 
-    /**
-     * Retrieve crimes that have at least one piece of evidence visible to a user.
-     * This ensures the Dashboard only lists crimes relevant to the user's custody.
-     */
+    
+
     findVisibleToUser: async (userId) => {
         const { rows } = await pool.query(
             `SELECT DISTINCT c.*

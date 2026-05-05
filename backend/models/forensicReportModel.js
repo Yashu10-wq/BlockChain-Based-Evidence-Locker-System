@@ -1,14 +1,9 @@
-/**
- * ── Forensic Report Model ─────────────────────────────────────
- * DB-access layer for the `forensic_reports` table.
- */
-
 const pool = require('../config/db');
 
 const ForensicReportModel = {
-    /**
-     * Insert a new forensic report linked to evidence.
-     */
+    
+
+
     create: async (evidenceId, technicianId, reportFile) => {
         const { rows } = await pool.query(
             `INSERT INTO forensic_reports (evidence_id, technician_id, report_file)
@@ -18,9 +13,9 @@ const ForensicReportModel = {
         return rows[0];
     },
 
-    /**
-     * Get all reports for a given evidence ID.
-     */
+    
+
+
     findByEvidenceId: async (evidenceId) => {
         const { rows } = await pool.query(
             'SELECT * FROM forensic_reports WHERE evidence_id = $1 ORDER BY uploaded_at',

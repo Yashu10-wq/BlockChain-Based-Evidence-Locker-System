@@ -17,7 +17,7 @@ async function simulateTamper() {
   console.log(`[ATTACK INITIATED] Targeting Evidence #${evidenceId}...`);
 
   try {
-    // 1. Find a block to tamper with (we grab the latest block for maximum impact)
+    
     const { rows } = await pool.query(
       'SELECT id, to_user, block_index FROM custody_logs WHERE evidence_id = $1 ORDER BY block_index DESC LIMIT 1',
       [evidenceId]
@@ -30,25 +30,25 @@ async function simulateTamper() {
 
     const logToTamper = rows[0];
     
-    // Create a fake, malicious user ID (e.g., 9999). If it's already 9999, use 8888.
+    
     const newUserId = logToTamper.to_user === 9999 ? 8888 : 9999; 
 
-    // 2. Disable the blockchain firewall (triggers)
+    
     console.log(' -> Bypassing PostgreSQL triggers (ALTER TABLE DISABLE TRIGGER ALL)...');
     await pool.query('ALTER TABLE custody_logs DISABLE TRIGGER ALL;');
     
-    // 3. Inject the malicious payload directly into the database
+    
     console.log(` -> Injecting malicious data into block #${logToTamper.block_index}...`);
     await pool.query(
       'UPDATE custody_logs SET to_user = $1 WHERE id = $2',
       [newUserId, logToTamper.id]
     );
 
-    // 4. Re-enable the firewall to hide our tracks
+    
     console.log(' -> Covering tracks (ALTER TABLE ENABLE TRIGGER ALL)...');
     await pool.query('ALTER TABLE custody_logs ENABLE TRIGGER ALL;');
 
-    // 5. Success Message
+    
     console.log('\n' + '='.repeat(60));
     console.log('🚨 DATABASE MANIPULATED: Evidence history altered successfully 🚨');
     console.log('='.repeat(60));

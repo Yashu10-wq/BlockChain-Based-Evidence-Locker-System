@@ -1,9 +1,3 @@
-/**
- * ── Cloudinary Configuration ──────────────────────────────────
- * Configures cloudinary.v2 SDK from environment variables.
- * Used by evidenceController to upload evidence photos.
- */
-
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({

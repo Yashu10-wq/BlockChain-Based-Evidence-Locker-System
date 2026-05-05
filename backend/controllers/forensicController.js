@@ -1,17 +1,6 @@
-/**
- * ── Forensic Controller ───────────────────────────────────────
- * Allows Forensic Technicians to upload analysis reports
- * and retrieve reports attached to evidence items.
- */
-
 const ForensicReportModel = require('../models/forensicReportModel');
 const EvidenceModel = require('../models/evidenceModel');
 
-/**
- * POST /api/forensic/upload-report
- * Body (multipart): evidence_id + report file
- * Role: Forensic Technician
- */
 const uploadReport = async (req, res) => {
     try {
         const { evidence_id } = req.body;
@@ -21,15 +10,15 @@ const uploadReport = async (req, res) => {
             return res.status(400).json({ error: 'No report file uploaded.' });
         }
 
-        // Verify evidence exists
+        
         const evidence = await EvidenceModel.findById(evidence_id);
         if (!evidence) {
             return res.status(404).json({ error: 'Evidence not found.' });
         }
 
-        // Save forensic report record with a proper HTTP URL
-        const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
         
+        const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+
         const report = await ForensicReportModel.create(
             evidence_id, technicianId, fileUrl
         );
@@ -44,11 +33,6 @@ const uploadReport = async (req, res) => {
     }
 };
 
-/**
- * GET /api/forensic/reports/:evidence_id
- * Returns all forensic reports for a given evidence item.
- * Role: Forensic Technician, Admin
- */
 const getReports = async (req, res) => {
     try {
         const { evidence_id } = req.params;

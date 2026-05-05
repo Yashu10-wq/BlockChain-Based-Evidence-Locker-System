@@ -1,14 +1,3 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- *  seed.js — One-time Admin User Seeder
- * ═══════════════════════════════════════════════════════════════
- *
- * Run:  node config/seed.js
- *
- * Creates a default Admin user if no users exist in the database.
- * Safe to run multiple times — it will skip if users already exist.
- */
-
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
 const bcrypt = require('bcryptjs');
@@ -16,6 +5,9 @@ const { Pool } = require('pg');
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 const SEED_USERS = [

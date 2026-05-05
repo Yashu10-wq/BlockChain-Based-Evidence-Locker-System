@@ -1,40 +1,25 @@
-/**
- * ── Evidence Controller ───────────────────────────────────────
- * Handles evidence registration, photo uploads (via Cloudinary),
- * retrieval, and locking of evidence records.
- *
- * Phase 2: Photos are uploaded to Cloudinary. The photo's
- * version/etag is hashed into a genesis blockchain block
- * to seal the image in the chain.
- */
-
 const fs = require('fs');
-const EvidenceModel       = require('../models/evidenceModel');
-const EvidencePhotoModel  = require('../models/evidencePhotoModel');
-const { generateQRCode }  = require('../utils/qrUtil');
-const cloudinary          = require('../config/cloudinary');
+const EvidenceModel = require('../models/evidenceModel');
+const EvidencePhotoModel = require('../models/evidencePhotoModel');
+const { generateQRCode } = require('../utils/qrUtil');
+const cloudinary = require('../config/cloudinary');
 const { BlockchainService } = require('../services/blockchainService');
-const CustodyLogModel     = require('../models/custodyLogModel');
+const CustodyLogModel = require('../models/custodyLogModel');
 
-/**
- * POST /api/evidence/register
- * Body: { title, description, location_found }
- * Role: Officer
- */
 const registerEvidence = async (req, res) => {
   try {
     const { crime_id, title, description, location_found } = req.body;
     const officerId = req.user.id;
 
-    // 1. Create evidence record (QR generated after we have the ID)
+    
     const evidence = await EvidenceModel.create(
       crime_id, title, description, location_found, officerId, null
     );
 
-    // 2. Generate QR code from evidence ID
+    
     const qrCode = await generateQRCode(evidence.id);
 
-    // 3. Update the record with the QR code
+    
     const updated = await EvidenceModel.updateQRCode(evidence.id, qrCode);
 
     return res.status(201).json({
@@ -47,18 +32,6 @@ const registerEvidence = async (req, res) => {
   }
 };
 
-/**
- * POST /api/evidence/upload-photo
- * Body (multipart): evidence_id + photo file
- * Role: Officer
- *
- * Flow:
- *  Multer saves to local temp →
- *  Upload to Cloudinary →
- *  Store secure_url + public_id + version in DB →
- *  Delete local temp file →
- *  Mine a genesis/photo block including photo version in hash.
- */
 const uploadPhoto = async (req, res) => {
   try {
     const { evidence_id } = req.body;
@@ -67,18 +40,18 @@ const uploadPhoto = async (req, res) => {
       return res.status(400).json({ error: 'No photo file uploaded.' });
     }
 
-    // Verify evidence exists
+    
     const evidence = await EvidenceModel.findById(evidence_id);
     if (!evidence) {
       return res.status(404).json({ error: 'Evidence not found.' });
     }
 
-    // Prevent uploads to locked evidence
+    
     if (evidence.locked) {
       return res.status(403).json({ error: 'Evidence is locked. Cannot upload photos.' });
     }
 
-    // Verify current custody (only Admin or current custodian/officer can upload)
+    
     if (req.user.role !== 'Admin') {
       const latestLog = await CustodyLogModel.getLatest(evidence_id);
       const currentHolderId = latestLog ? latestLog.to_user : evidence.officer_id;
@@ -87,18 +60,18 @@ const uploadPhoto = async (req, res) => {
       }
     }
 
-    // ── Upload to Cloudinary ─────────────────────────────────
+    
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: `evidence_locker/${evidence_id}`,
       resource_type: 'image',
     });
 
-    // Delete local temp file after successful upload
+    
     fs.unlink(req.file.path, (err) => {
       if (err) console.error('Failed to delete temp file:', err.message);
     });
 
-    // ── Persist photo record with Cloudinary metadata ────────
+    
     const photo = await EvidencePhotoModel.create(
       evidence_id,
       result.secure_url,
@@ -106,7 +79,7 @@ const uploadPhoto = async (req, res) => {
       String(result.version)
     );
 
-    // ── Mine a blockchain block that seals this upload action
+    
     await BlockchainService.addBlock(
       evidence_id,
       req.user.id,
@@ -123,11 +96,6 @@ const uploadPhoto = async (req, res) => {
   }
 };
 
-/**
- * GET /api/evidence/:id
- * Returns the evidence record along with its photos.
- * Role: Any authenticated user
- */
 const getEvidence = async (req, res) => {
   try {
     const evidence = await EvidenceModel.findById(req.params.id);
@@ -144,11 +112,6 @@ const getEvidence = async (req, res) => {
   }
 };
 
-/**
- * POST /api/evidence/lock
- * Body: { evidence_id }
- * Role: Officer
- */
 const lockEvidence = async (req, res) => {
   try {
     const { evidence_id } = req.body;
@@ -178,11 +141,6 @@ const lockEvidence = async (req, res) => {
   }
 };
 
-/**
- * GET /api/evidence/all
- * Returns all evidence records.
- * Role: Any authenticated user
- */
 const getAllEvidence = async (req, res) => {
   try {
     let evidence;
@@ -192,7 +150,7 @@ const getAllEvidence = async (req, res) => {
       evidence = await EvidenceModel.findVisibleToUser(req.user.id);
     }
 
-    // Attach blockchain integrity flag to each evidence item
+    
     const enriched = await Promise.all(
       evidence.map(async (e) => {
         const chainResult = await BlockchainService.verifyChain(e.id);
