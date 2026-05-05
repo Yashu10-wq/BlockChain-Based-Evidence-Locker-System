@@ -129,7 +129,7 @@ const forgotPassword = async (req, res) => {
         });
 
         const mailOptions = {
-            from: `"Evidence Locker System" <${process.env.EMAIL_USER}>`,
+            from: `"Evidence Locker System" <yashwadhwani7867@gmail.com>`,
             to: email,
             subject: 'Password Reset OTP',
             text: `Your password reset OTP is: ${otp}\n\nIt expires in 15 minutes.`,

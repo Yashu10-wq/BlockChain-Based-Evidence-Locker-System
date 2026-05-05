@@ -37,7 +37,7 @@ const SEED_USERS = [
     },
     {
         name: 'Dr. Nirmit',
-        email: 'nirmitdolly@gmail.com',
+        email: 'yash.wadhwani24@vit.edu',
         password: 'forensic123',
         role: 'Forensic Technician',
     },
