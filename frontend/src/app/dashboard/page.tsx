@@ -55,7 +55,7 @@ export default function DashboardPage() {
     <div className="flex">
       <Sidebar />
 
-      <main className="ml-64 flex-1 p-8 min-h-screen">
+      <main className="md:md:ml-64 flex-1 p-4 md:p-8 min-h-screen">
         {/* Header */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-slate-900">

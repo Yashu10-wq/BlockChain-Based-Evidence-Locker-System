@@ -79,7 +79,7 @@ export default function AuditPage() {
   return (
     <div className="flex">
       <Sidebar />
-      <main className="ml-64 flex-1 p-8 min-h-screen">
+      <main className="md:md:ml-64 flex-1 p-4 md:p-8 min-h-screen">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-slate-900">Integrity Audit</h2>
           <p className="text-sm text-slate-500 mt-1">

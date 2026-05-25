@@ -37,7 +37,7 @@ export default function RegisterCrimePage() {
   return (
     <div className="flex">
       <Sidebar />
-      <main className="ml-64 flex-1 p-8 bg-slate-50 min-h-screen flex items-center justify-center">
+      <main className="md:md:ml-64 flex-1 p-4 md:p-8 bg-slate-50 min-h-screen flex items-center justify-center">
         <div className="card max-w-lg w-full">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Register New Crime</h2>
           <p className="text-sm text-slate-500 mb-6">Create a new folder to organize related evidence.</p>

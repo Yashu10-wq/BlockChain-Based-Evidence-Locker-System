@@ -69,7 +69,7 @@ export default function CrimeFolderPage() {
     return (
       <div className="flex">
         <Sidebar />
-        <main className="ml-64 flex-1 p-8 min-h-screen flex items-center justify-center">
+        <main className="md:md:ml-64 flex-1 p-4 md:p-8 min-h-screen flex items-center justify-center">
           <span className="spinner" />
         </main>
       </div>
@@ -80,7 +80,7 @@ export default function CrimeFolderPage() {
     return (
       <div className="flex">
         <Sidebar />
-        <main className="ml-64 flex-1 p-8 min-h-screen flex items-center justify-center">
+        <main className="md:md:ml-64 flex-1 p-4 md:p-8 min-h-screen flex items-center justify-center">
           <p className="text-slate-500">Crime not found.</p>
         </main>
       </div>
@@ -91,7 +91,7 @@ export default function CrimeFolderPage() {
     <div className="flex">
       <Sidebar />
 
-      <main className="ml-64 flex-1 p-8 min-h-screen">
+      <main className="md:md:ml-64 flex-1 p-4 md:p-8 min-h-screen">
         <div className="mb-8">
           <div className="flex items-center gap-3 text-sm text-blue-600 mb-2 font-medium">
             <Link href="/dashboard" className="hover:underline">Dashboard</Link>

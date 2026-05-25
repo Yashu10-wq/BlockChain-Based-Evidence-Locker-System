@@ -124,7 +124,7 @@ export default function EvidenceDetailPage() {
     return (
       <div className="flex">
         <Sidebar />
-        <main className="ml-64 flex-1 p-8 min-h-screen flex items-center justify-center">
+        <main className="md:md:ml-64 flex-1 p-4 md:p-8 min-h-screen flex items-center justify-center">
           <span className="spinner" />
         </main>
       </div>
@@ -135,7 +135,7 @@ export default function EvidenceDetailPage() {
     return (
       <div className="flex">
         <Sidebar />
-        <main className="ml-64 flex-1 p-8 min-h-screen flex items-center justify-center">
+        <main className="md:md:ml-64 flex-1 p-4 md:p-8 min-h-screen flex items-center justify-center">
           <p className="text-slate-400">Evidence not found.</p>
         </main>
       </div>
@@ -145,7 +145,7 @@ export default function EvidenceDetailPage() {
   return (
     <div className="flex">
       <Sidebar />
-      <main className="ml-64 flex-1 p-8 min-h-screen">
+      <main className="md:md:ml-64 flex-1 p-4 md:p-8 min-h-screen">
         {/* Header */}
         <div className="flex items-start justify-between mb-8">
           <div>

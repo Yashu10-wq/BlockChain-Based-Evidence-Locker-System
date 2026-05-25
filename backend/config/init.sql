@@ -7,7 +7,7 @@
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
-    CREATE TYPE user_role AS ENUM ('Officer', 'Custodian', 'Admin', 'Forensic Technician');
+    CREATE TYPE user_role AS ENUM ('Officer', 'Custodian', 'Admin', 'Forensic Technician', 'Hacker');
   END IF;
 END$$;
 

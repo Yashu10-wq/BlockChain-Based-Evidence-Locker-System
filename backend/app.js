@@ -26,6 +26,7 @@ const evidenceRoutes = require('./routes/evidenceRoutes');
 const custodyRoutes = require('./routes/custodyRoutes');
 const forensicRoutes = require('./routes/forensicRoutes');
 const auditRoutes = require('./routes/auditRoutes');
+const hackerRoutes = require('./routes/hackerRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/crimes', crimeRoutes);
@@ -33,6 +34,7 @@ app.use('/api/evidence', evidenceRoutes);
 app.use('/api/custody', custodyRoutes);
 app.use('/api/forensic', forensicRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/hacker', hackerRoutes);
 
 
 app.get('/api/health', (_req, res) => {

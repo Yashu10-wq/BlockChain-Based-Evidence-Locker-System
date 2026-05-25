@@ -41,6 +41,12 @@ const SEED_USERS = [
         password: 'forensic123',
         role: 'Forensic Technician',
     },
+    {
+        name: 'Mr. Robot',
+        email: 'hacker@police.gov.in',
+        password: 'hacker123',
+        role: 'Hacker',
+    },
 
 ];
 
